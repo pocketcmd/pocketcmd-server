@@ -1,0 +1,98 @@
+version: 2
+
+project_name: pocketcmd
+
+before:
+  hooks:
+    - go mod verify
+
+builds:
+  - id: pcmd
+    main: ./cmd/pcmd
+    binary: pcmd
+    env:
+      # modernc.org/sqlite is pure-Go, so we cross-compile with CGO off.
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+      - -mod=readonly
+    ldflags:
+      - -s -w
+      - -X main.version={{ .Version }}
+      - -X main.commit={{ .Commit }}
+      - -X main.date={{ .Date }}
+    mod_timestamp: "{{ .CommitTimestamp }}" # reproducible builds
+
+archives:
+  - id: default
+    formats: [tar.gz]
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE
+      - README.md
+      - SECURITY.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+signs:
+  - id: checksums
+    cmd: cosign
+    signature: "${artifact}.sigstore.json"
+    args:
+      - sign-blob
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - "--yes"
+    artifacts: checksum
+    output: true
+
+# Gives macOS users `brew install pocketcmd/tap/pocketcmd`.
+homebrew_casks:
+  - name: pocketcmd
+    ids:
+      - default
+    repository:
+      owner: pocketcmd
+      name: homebrew-tap
+      # Provisioned in CI from a PAT with contents:write on the tap repo.
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Casks
+    homepage: "https://pocketcmd.com"
+    description: "Single-binary server exposing monitoring and config sync to your phone over HTTPS"
+    license: "MIT"
+    binaries:
+      - pcmd
+    skip_upload: '{{ if .Env.HOMEBREW_TAP_TOKEN }}auto{{ else }}true{{ end }}'
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/pcmd"]
+          end
+
+release:
+  prerelease: auto
+  draft: false
+  footer: |
+    ---
+    Install: `curl -fsSL https://pocketcmd.com/install.sh | sh`
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^refactor:"
+      - "Merge pull request"
+      - "Merge branch"

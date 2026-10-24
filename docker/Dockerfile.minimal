@@ -1,0 +1,8 @@
+FROM alpine:3.20
+
+RUN apk add --no-cache bash
+
+COPY pcmd /usr/local/bin/pcmd
+COPY e2e-test /usr/local/bin/e2e-test
+
+CMD ["sleep", "infinity"]

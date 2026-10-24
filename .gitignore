@@ -1,0 +1,23 @@
+# Binary (root only, not cmd/pcmd/ directory)
+/pcmd
+/pcmd-*
+/e2e-test
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Go
+vendor/
+
+# GoReleaser build output
+/dist/
+
+/bin/

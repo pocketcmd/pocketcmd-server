@@ -1,0 +1,12 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y systemd && apt-get clean
+
+# Enable systemd
+ENV container=docker
+STOPSIGNAL SIGRTMIN+3
+
+COPY pcmd /usr/local/bin/pcmd
+COPY e2e-test /usr/local/bin/e2e-test
+
+CMD ["/sbin/init"]

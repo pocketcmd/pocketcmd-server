@@ -1,0 +1,28 @@
+# E2E TEST HARNESS ONLY, not a deployment recommendation. These images
+# exist to exercise `pcmd` install against real init systems;
+# `privileged: true` is what running systemd/OpenRC inside a container
+# requires. 
+name: pocketcmd-server-e2e
+services:
+  systemd:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.systemd
+    privileged: true
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    cgroup: host
+
+  openrc:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.openrc
+    privileged: true
+
+  minimal:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.minimal
