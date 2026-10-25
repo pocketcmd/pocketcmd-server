@@ -139,8 +139,8 @@ func TestStart_StartsAndReportsHealth(t *testing.T) {
 	}
 	f.running, f.healthy = false, false
 	out.Reset()
-	if err := startService(&out, 8767, "127.0.0.1"); err != nil || !strings.Contains(out.String(), "health check failed") {
-		t.Fatalf("unhealthy start must warn, not fail: err=%v out=%q", err, out.String())
+	if code, msg := exitCodeFor(startService(&out, 8767, "127.0.0.1")); code != exitUnhealthy || !strings.Contains(msg, "health check failed") {
+		t.Fatalf("an unhealthy start must exit %d: code=%d msg=%q", exitUnhealthy, code, msg)
 	}
 	f.running, f.startErr = false, errors.New("launchctl refused")
 	if err := startService(&out, 8767, "127.0.0.1"); err == nil || !strings.Contains(err.Error(), "launchctl refused") {

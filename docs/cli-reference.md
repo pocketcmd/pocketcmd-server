@@ -49,7 +49,7 @@ On later runs `pcmd` follows the saved `service_mode`: in `background` mode it i
 | `1` | Error (printed on stderr as `Error: ...`). |
 | `2` | `pcmd status`: the service is installed but not running. |
 | `3` | `pcmd status`: no service is installed. |
-| `4` | `pcmd restart`: the service restarted but failed its health check within 10 seconds. |
+| `4` | `pcmd start` or `pcmd restart`: the service started but failed its health check within 10 seconds. |
 | `130` | Interrupted with Ctrl+C while waiting (first run, `sync`, `logs -f`, `audit -f`). |
 
 ---
@@ -130,7 +130,7 @@ pcmd uninstall --yes
 
 ### `pcmd start`
 
-Start the installed background service (after `pcmd stop`) and wait for it to answer `/api/health`. Fails if no service is installed.
+Start the installed background service (after `pcmd stop`) and wait for it to answer `/api/health`. Fails if no service is installed, and exits `4` when the service does not answer within 10 seconds.
 
 ```
 pcmd start

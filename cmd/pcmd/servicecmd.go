@@ -47,8 +47,7 @@ func startService(w io.Writer, port int, host string) error {
 		return fmt.Errorf("start failed: %w", err)
 	}
 	if err := svc.waitHealthy(host, port, 10*time.Second); err != nil {
-		fmt.Fprintln(w, "Warning: service started but the health check failed. See 'pcmd status'.")
-		return nil
+		return exitWith(exitUnhealthy, fmt.Sprintf("service started but the health check failed (see 'pcmd logs'): %v", err))
 	}
 	fmt.Fprintln(w, "Service started.")
 	return nil
