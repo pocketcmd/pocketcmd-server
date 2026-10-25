@@ -589,7 +589,7 @@ func decideRequest(w io.Writer, id, status string) error {
 			"request_id", decided.ID, "label", decided.Label,
 			"requested_by", decided.RequestedBy, "decided_by", cliActor)
 		if status == "approved" {
-			fmt.Fprintf(w, "Approved %s (%s); the running service picks it up on its next config reload.\n", decided.ID, decided.Label)
+			fmt.Fprintf(w, "Approved %s (%s); a running service starts collecting it within 30 seconds.\n", decided.ID, decided.Label)
 		} else {
 			fmt.Fprintf(w, "Declined %s (%s).\n", decided.ID, decided.Label)
 		}

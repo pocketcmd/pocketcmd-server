@@ -570,7 +570,7 @@ pcmd requests --json
 
 ### `pcmd requests approve <request-id>`
 
-Approve a pending request. The command is added to the monitoring config and the running service starts collecting it on its next config reload. Already-decided requests are refused.
+Approve a pending request. The command is added to the monitoring config and a running service starts collecting it within 30 seconds. Already-decided requests are refused.
 
 ```bash
 pcmd requests approve req-1a2b3c4d5e6f7a8b

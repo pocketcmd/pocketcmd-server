@@ -12,6 +12,8 @@ type ConfigSource interface {
 	Load() (*MonitoringConfig, int64, error)
 }
 
+const configPollInterval = 30 * time.Second
+
 type Scheduler struct {
 	store           *MetricStore
 	evaluator       *Evaluator
@@ -21,6 +23,7 @@ type Scheduler struct {
 	configMu        sync.RWMutex
 	configUpdatedAt int64
 	reload          chan struct{}
+	configPoll      time.Duration
 	// timerCancel is owned by the goroutine driving reloads; Stop cancels the parent context instead.
 	timerCancel context.CancelFunc
 	cancel      context.CancelFunc
@@ -29,11 +32,12 @@ type Scheduler struct {
 
 func NewScheduler(store *MetricStore, evaluator *Evaluator, source ConfigSource, logger *slog.Logger) *Scheduler {
 	return &Scheduler{
-		store:     store,
-		evaluator: evaluator,
-		source:    source,
-		logger:    logger,
-		reload:    make(chan struct{}, 1),
+		store:      store,
+		evaluator:  evaluator,
+		source:     source,
+		logger:     logger,
+		reload:     make(chan struct{}, 1),
+		configPoll: configPollInterval,
 	}
 }
 
@@ -53,22 +57,25 @@ func (s *Scheduler) Start(ctx context.Context) {
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
+		poll := time.NewTicker(s.configPoll)
+		defer poll.Stop()
 		for {
 			select {
 			case <-ctx.Done():
 				return
 			case <-s.reload:
-				cfg, updatedAt, changed := s.loadIfChanged()
-				if !changed {
-					continue
-				}
-				if s.logger != nil {
-					s.logger.Info("monitoring config changed, reloading")
-				}
-				s.stopTimers()
-				s.setConfig(cfg, updatedAt)
-				s.createTimers(ctx)
+			case <-poll.C:
 			}
+			cfg, updatedAt, changed := s.loadIfChanged()
+			if !changed {
+				continue
+			}
+			if s.logger != nil {
+				s.logger.Info("monitoring config changed, reloading")
+			}
+			s.stopTimers()
+			s.setConfig(cfg, updatedAt)
+			s.createTimers(ctx)
 		}
 	}()
 }

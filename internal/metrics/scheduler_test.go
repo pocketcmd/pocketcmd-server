@@ -1,8 +1,10 @@
 package metrics
 
 import (
+	"context"
 	"sync"
 	"testing"
+	"time"
 )
 
 type fakeSource struct {
@@ -96,5 +98,26 @@ func TestScheduler_ConfigChanged(t *testing.T) {
 	}
 	if cfg == nil || updatedAt != 2000 {
 		t.Fatalf("expected the loaded config back, got cfg=%v updatedAt=%d", cfg, updatedAt)
+	}
+}
+
+func TestScheduler_PicksUpExternalChangeWithoutReload(t *testing.T) {
+	source := &fakeSource{
+		cfg:       &MonitoringConfig{DefaultInterval: 30, RetentionDays: 7},
+		updatedAt: 1000,
+	}
+	sched := newTestScheduler(t, source)
+	sched.configPoll = 10 * time.Millisecond
+	sched.Start(context.Background())
+	t.Cleanup(sched.Stop)
+
+	source.set(&MonitoringConfig{DefaultInterval: 30, RetentionDays: 14}, 2000)
+
+	deadline := time.Now().Add(2 * time.Second)
+	for sched.GetConfig().RetentionDays != 14 {
+		if time.Now().After(deadline) {
+			t.Fatal("scheduler did not pick up the changed config")
+		}
+		time.Sleep(5 * time.Millisecond)
 	}
 }
