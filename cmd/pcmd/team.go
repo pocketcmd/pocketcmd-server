@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -260,8 +261,8 @@ func newRevokeUserCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "revoke-user <user-or-name>",
 		Short: "Revoke a team member (cascades to devices and outstanding invites)",
-		Long: `Revoke a team member: their devices are revoked and the invites made for or by them are
-cancelled. Takes effect on the member's next request. The owner and the last active
+		Long: `Revoke a team member: their devices are revoked, the invites made for or by them are
+cancelled and their vault access is removed. Takes effect on the member's next request. The owner and the last active
 admin cannot be revoked. --purge-data additionally deletes the sync records their
 devices wrote (tombstoned, so the remaining devices sync the deletion).`,
 		Example: `  pcmd revoke-user bob
@@ -475,13 +476,34 @@ func runRevokeUser(cmd *cobra.Command, args []string) error {
 		}
 	}
 
+	store := datasync.NewSyncStore(db, nil)
+	vaults, err := store.VaultsForUser(u.UserID)
+	if err != nil {
+		return fmt.Errorf("list vault access: %w", err)
+	}
+	if err := withAudit(func(audit *slog.Logger) error {
+		for _, vaultID := range vaults {
+			if err := store.RevokeVault(vaultID, u.UserID); err != nil {
+				return fmt.Errorf("revoke vault %s: %w", vaultID, err)
+			}
+			audit.Info("vault_revoked",
+				"user_id", cliActor, "vault_id", vaultID,
+				"target_user", u.UserID, "level", "")
+		}
+		return nil
+	}); err != nil {
+		return err
+	}
+
 	fmt.Fprintf(cmd.OutOrStdout(), "Revoked user %s (%s)\n", u.DisplayName, u.UserID)
+	if len(vaults) > 0 {
+		fmt.Fprintf(cmd.OutOrStdout(), "Removed their access to %d vault(s).\n", len(vaults))
+	}
 	if purgeData {
 		deviceIDs := make([]string, 0, len(userDevs))
 		for _, d := range userDevs {
 			deviceIDs = append(deviceIDs, d.DeviceID)
 		}
-		store := datasync.NewSyncStore(db, nil)
 		n, err := store.PurgeUserData(u.UserID, deviceIDs)
 		if err != nil {
 			return fmt.Errorf("purge sync data: %w", err)

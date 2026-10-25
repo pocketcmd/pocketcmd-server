@@ -384,7 +384,7 @@ pcmd list-users
 
 ### `pcmd revoke-user <user-or-name>`
 
-Revoke a team member. Cascades to all of their active paired devices and to any outstanding invites created for them or by them. Revocation takes effect on the next request: cert renewal fails immediately and every authenticated request re-checks the registry, so live sessions die on their next call rather than at JWT expiry. The owner cannot be revoked, and neither can the last active admin. Asks for confirmation (the question says whether data will be purged) unless `--yes` is given.
+Revoke a team member. Cascades to all of their active paired devices, to any outstanding invites created for them or by them, and to their vault access (recorded in the audit log as `vault_revoked`). Revocation takes effect on the next request: cert renewal fails immediately and every authenticated request re-checks the registry, so live sessions die on their next call rather than at JWT expiry. The owner cannot be revoked, and neither can the last active admin. Asks for confirmation (the question says whether data will be purged) unless `--yes` is given.
 
 **Synopsis:**
 

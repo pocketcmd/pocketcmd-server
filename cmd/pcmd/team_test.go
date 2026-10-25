@@ -416,6 +416,46 @@ func TestRevokeUserCommand_RefusesLastAdmin(t *testing.T) {
 	}
 }
 
+func TestRevokeUserCommand_RevokesVaultAccess(t *testing.T) {
+	testutil.TempHome(t)
+
+	users := pki.NewUserRegistry(testStateDB(t))
+	admin, err := users.Create("adminuser", "admin", "cli")
+	if err != nil {
+		t.Fatalf("create admin: %v", err)
+	}
+	member, err := users.Create("memberuser", "member", "cli")
+	if err != nil {
+		t.Fatalf("create member: %v", err)
+	}
+
+	seedDB := testStateDB(t)
+	seedStore := datasync.NewSyncStore(seedDB, monitoring.NewStore(seedDB))
+	if _, err := seedStore.CreateVault("team_ops", admin.UserID); err != nil {
+		t.Fatalf("create vault: %v", err)
+	}
+	if err := seedStore.GrantVault("team_ops", member.UserID, datasync.LevelView); err != nil {
+		t.Fatalf("grant vault: %v", err)
+	}
+
+	stdout, _, err := runCLI(t, "revoke-user", member.UserID, "--yes")
+	if err != nil {
+		t.Fatalf("revoke-user failed: %v", err)
+	}
+	if !strings.Contains(stdout.String(), "Removed their access to 1 vault(s).") {
+		t.Fatalf("expected vault removal in output, got: %q", stdout.String())
+	}
+
+	checkDB := testStateDB(t)
+	store := datasync.NewSyncStore(checkDB, monitoring.NewStore(checkDB))
+	if vaults, err := store.VaultsForUser(member.UserID); err != nil || len(vaults) != 0 {
+		t.Errorf("member vault access after revoke: %v (err %v)", vaults, err)
+	}
+	if vaults, err := store.VaultsForUser(admin.UserID); err != nil || len(vaults) != 1 {
+		t.Errorf("admin vault access must stay: %v (err %v)", vaults, err)
+	}
+}
+
 func TestRevokeUserCommand_PurgeDataFlag(t *testing.T) {
 	testutil.TempHome(t)
 
