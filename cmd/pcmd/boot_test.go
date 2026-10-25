@@ -276,6 +276,15 @@ func TestRotateServerCert_ReplacesIdentity(t *testing.T) {
 	if _, fp3, _ := pki.LoadOrGenerateServerCert(tlsDir); fp3 == newFP {
 		t.Fatal("second rotation kept the certificate")
 	}
+
+	f.calls, f.healthy = nil, false
+	stdout, _, err = runCLI(t, "rotate-server-cert", "-y", "--no-qr", "--advertise-ip", "127.0.0.1")
+	if code, _ := exitCodeFor(err); code != exitUnhealthy {
+		t.Fatalf("an unhealthy restart must exit %d: %v", exitUnhealthy, err)
+	}
+	if _, fp4, _ := pki.LoadOrGenerateServerCert(tlsDir); !strings.Contains(stdout.String(), fp4) {
+		t.Fatalf("the re-pair code must be printed when the restart fails: %q", stdout.String())
+	}
 }
 
 func TestSetupMetrics_WiresStoreAndCloser(t *testing.T) {

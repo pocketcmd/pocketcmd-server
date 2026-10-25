@@ -463,10 +463,9 @@ func runRotateServerCert(cmd *cobra.Command, args []string) error {
 	fmt.Fprintf(w, "Server certificate rotated. New fingerprint: %s\n", shortFP(fp))
 
 	// A running server keeps serving the certificate it loaded at start.
+	var restartErr error
 	if svc.isInstalled() {
-		if err := restartService(w, port, host); err != nil {
-			return err
-		}
+		restartErr = restartService(w, port, host)
 	} else {
 		fmt.Fprintln(w, "If the server is running in the foreground, stop it with Ctrl+C and start it again with 'pcmd' so it serves the new certificate.")
 	}
@@ -477,7 +476,7 @@ func runRotateServerCert(cmd *cobra.Command, args []string) error {
 	fmt.Fprintln(w, "Scan this code in the app on every paired device to re-pair it:")
 	fmt.Fprintln(w)
 	printPairingQR(w, repairURL)
-	return nil
+	return restartErr
 }
 
 func randomToken() string {

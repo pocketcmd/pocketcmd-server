@@ -49,7 +49,7 @@ On later runs `pcmd` follows the saved `service_mode`: in `background` mode it i
 | `1` | Error (printed on stderr as `Error: ...`). |
 | `2` | `pcmd status`: the service is installed but not running. |
 | `3` | `pcmd status`: no service is installed. |
-| `4` | `pcmd start` or `pcmd restart`: the service started but failed its health check within 10 seconds. |
+| `4` | `pcmd start`, `pcmd restart` or `pcmd rotate-server-cert`: the service started but failed its health check within 10 seconds. |
 | `130` | Interrupted with Ctrl+C while waiting (first run, `sync`, `logs -f`, `audit -f`). |
 
 ---
@@ -230,7 +230,7 @@ pcmd rename-device a1b2c3d4 --name "Work phone" --label ""
 
 ### `pcmd rotate-server-cert`
 
-Regenerate the server's TLS certificate. Every paired device pinned the old fingerprint, so each must re-pair; the command asks for confirmation first (`--yes` skips it). It restarts the installed background service on the new certificate (a foreground server has to be restarted by hand), then prints a QR code and URL with the new fingerprint. Scan it in the app on every paired device: registered, active devices re-pair with it and keep their user and role. It pairs no new devices.
+Regenerate the server's TLS certificate. Every paired device pinned the old fingerprint, so each must re-pair; the command asks for confirmation first (`--yes` skips it). It restarts the installed background service on the new certificate (a foreground server has to be restarted by hand), then prints a QR code and URL with the new fingerprint. The code is printed even when the restarted service fails its health check; the command then exits `4`. Scan it in the app on every paired device: registered, active devices re-pair with it and keep their user and role. It pairs no new devices.
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
