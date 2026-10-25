@@ -279,8 +279,14 @@ func TestGenerateOpenRCScript(t *testing.T) {
 	if !strings.Contains(script, `command_args="--foreground -p 8767 --host 0.0.0.0"`) {
 		t.Fatal("missing command_args")
 	}
-	if !strings.Contains(script, "command_background=true") {
-		t.Fatal("missing command_background")
+	if !strings.Contains(script, "supervisor=supervise-daemon") {
+		t.Fatal("the service must run under supervise-daemon so it is restarted")
+	}
+	if strings.Contains(script, "command_background") {
+		t.Fatal("supervise-daemon does not support command_background")
+	}
+	if !strings.Contains(script, "respawn_delay=5") || !strings.Contains(script, "respawn_max=0") {
+		t.Fatal("missing respawn settings")
 	}
 	if !strings.Contains(script, "pidfile=") {
 		t.Fatal("missing pidfile")
