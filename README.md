@@ -46,7 +46,7 @@ The install script downloads the newest release, verifies its checksum, and puts
 curl -fsSL https://pocketcmd.com/install.sh | sh
 ```
 
-Run the same command again to update: it replaces `pcmd` where it is installed, restarts the running service, and puts the previous version back if the new one fails its health check. See [updating a server](docs/deployment.md#updating-a-server).
+Run the same command again to update: it replaces `pcmd` where it is installed, restarts the running service, and puts the previous version back if the new one fails its health check.
 
 Pre-built binaries are also on the **[releases page](https://github.com/pocketcmd/pocketcmd-server/releases/latest)**:
 
@@ -92,8 +92,6 @@ pcmd --advertise-ip myhome.example.net   # a dynamic-DNS name survives a changin
 sha256sum -c --ignore-missing checksums.txt
 gh attestation verify pocketcmd_linux_amd64.tar.gz --repo pocketcmd/pocketcmd-server
 ```
-
-The cosign command is in [docs/deployment.md](docs/deployment.md#verifying-a-release-by-hand). `go install` builds report version `1.0.0-dev`; only release-pipeline binaries carry the real version.
 
 </details>
 
@@ -182,7 +180,7 @@ make test-docker    # cross-platform E2E tests (requires Docker)
 make all            # cross-compile every target
 ```
 
-[Contributing](CONTRIBUTING.md) · [Architecture](docs/architecture.md) · [API reference](docs/api.md) · [CLI reference](docs/cli-reference.md) · [Deployment](docs/deployment.md) · [Issues](https://github.com/pocketcmd/pocketcmd-server/issues)
+[Contributing](CONTRIBUTING.md) · [Architecture](docs/architecture.md) · [API reference](docs/api.md) · [CLI reference](docs/cli-reference.md) · [Issues](https://github.com/pocketcmd/pocketcmd-server/issues)
 
 ## License
 

@@ -59,7 +59,7 @@ version: every `v1.x.y` release speaks `1.0`. A wire change that breaks either
 side bumps both to the next major. Within a major, changes are additive in
 both directions: clients ignore fields they do not know, and a client that
 relies on something a later minor added checks the server's `version` from
-`GET /api/capabilities` first. See [deployment](deployment.md#versions-follow-the-api)
+`GET /api/capabilities` first.
 for the release order this relies on.
 
 ### Authentication tiers
