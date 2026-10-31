@@ -40,6 +40,7 @@ var supportedTypes = map[string]bool{
 	"enroll_request":    true,
 	"device_revocation": true,
 	"files_enrollment":  true,
+	"ai_config":         true,
 }
 
 // deviceScopedWriteTypes are the record types whose record id is a device id.
