@@ -224,7 +224,7 @@ func TestSyncStore_AcceptsEveryClientRecordType(t *testing.T) {
 		"task", "ssh_key", "secret_item", "settings", "task_group", "task_tag",
 		"sftp_bookmark", "workspace", "snippet", "snippet_folder",
 		"command_template", "layout_config", "port_forward_rule",
-		"alert_config", "dashboard",
+		"alert_config", "dashboard", "ai_config",
 	}
 
 	records := make([]SyncRecord, 0, len(clientTypes))
