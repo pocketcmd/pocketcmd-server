@@ -6,6 +6,9 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
     groups:
       actions:
         patterns:
@@ -16,6 +19,9 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
     groups:
       minor-and-patch:
         update-types:
