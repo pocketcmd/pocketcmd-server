@@ -17,9 +17,6 @@ updates:
     cooldown:
       default-days: 7
     groups:
-      modernc:
-        patterns:
-          - "modernc.org/*"
       minor-and-patch:
         update-types:
           - minor
